@@ -30,8 +30,8 @@ def home():
 @app.route('/dashboard')
 def index():
     """Main dashboard page."""
-    # Auto-train if no model exists
-    if not get_model_status():
+    # Auto-train if no model exists (Skip on Vercel to avoid Read-only error)
+    if not os.environ.get('VERCEL') and not get_model_status():
         print("[System] No model found. Initiating auto-synthesis...")
         try:
             pipeline = MLPipeline()

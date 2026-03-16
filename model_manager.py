@@ -10,6 +10,11 @@ SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
 
 def save_model(model, metadata, scaler=None):
     """Saves the trained model, its metadata, and optionally a scaler."""
+    # Vercel has a read-only filesystem. Prevent crashes on write attempts.
+    if os.environ.get('VERCEL'):
+        print("[Warning] Attempted to save model in a read-only environment (Vercel). Skipping write.")
+        return
+        
     os.makedirs(MODEL_DIR, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
     if scaler:
