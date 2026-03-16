@@ -11,11 +11,11 @@ ENV/
 .ipynb_checkpoints
 
 # ML/Data
-dataset/cleaned_dataset.csv
-dataset/cleaning_report.json
-trained_models/
-*.joblib
-*.pkl
+# dataset/cleaned_dataset.csv
+# dataset/cleaning_report.json
+# trained_models/
+# *.joblib
+# *.pkl
 
 # OS
 .DS_Store
