@@ -1,0 +1,10 @@
+Flask
+scikit-learn
+pandas
+joblib
+liac-arff
+streamlit
+watchdog
+matplotlib
+gradio
+gunicorn

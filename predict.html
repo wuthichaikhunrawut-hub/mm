@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction - Nexus ML</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#06B6D4',
+                        accent: '#8B5CF6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .clip-path-half {
+            clip-path: inset(0 0 50% 0);
+        }
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            background-size: 1rem;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-900 min-h-screen text-white font-sans antialiased selection:bg-cyan-500 selection:text-white">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside
+            class="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 shadow-2xl flex flex-col transition-all duration-300">
+            <div class="p-6 flex items-center justify-center border-b border-white/10">
+                <h1
+                    class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 tracking-wider">
+                    NEXUS<span class="text-white text-lg font-light"> ML</span></h1>
+            </div>
+            <nav class="mt-8 space-y-2 px-4 flex-1">
+                <a href="/dashboard"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <span class="mx-3 font-medium">Dashboard</span>
+                </a>
+                <a href="/train"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                        </path>
+                    </svg>
+                    <span class="mx-3 font-medium">Train Model</span>
+                </a>
+                <a href="/predict"
+                    class="flex items-center px-4 py-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="mx-3 font-medium">Predict</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-white/10 text-xs text-center text-gray-500">
+                Nexus Core v2.1
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-y-auto custom-scrollbar-light animate-fade-in">
+            <header class="mb-10 animate-fade-in-up">
+                <h1 class="text-4xl font-extrabold tracking-tight text-white mb-2">Heart Disease Prediction</h1>
+                <p class="text-gray-400 text-sm font-medium">Advanced clinical diagnostics powered by Gaussian Naive Bayes probabilistic engine.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Section 1: Medical Information Form -->
+                <section
+                    class="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[2.5rem] shadow-xl animate-fade-in-up hover:scale-[1.01] hover:shadow-cyan-500/5 transition-all duration-500"
+                    style="animation-delay: 0.1s">
+                    <h3 class="text-xs font-black text-cyan-400 uppercase tracking-[0.3em] mb-8">
+                        Patient Medical Attributes</h3>
+
+                    <form id="predict-form" class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Age -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Age (Years)</label>
+                                </div>
+                                <input type="number" name="age" id="input-age" value="54" min="1" max="120" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Sex -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Sex (Gender)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl">
+                                            0 = Female<br>1 = Male
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="sex" id="input-sex" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="1" selected>Male</option>
+                                    <option value="0">Female</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Chest Pain -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">Chest Pain Type (cp)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl leading-relaxed">
+                                            0: Typical Angina<br>1: Atypical Angina<br>2: Non-anginal Pain<br>3: Asymptomatic
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="cp" id="input-cp" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0">Typical Angina</option>
+                                    <option value="1">Atypical Angina</option>
+                                    <option value="2" selected>Non-anginal Pain</option>
+                                    <option value="3">Asymptomatic</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Blood Pressure -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold px-2 tracking-widest text-[9px]">Resting Blood Pressure (mmHg)</label>
+                                </div>
+                                <input type="number" name="trestbps" id="input-trestbps" value="130" min="50" max="250" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Cholesterol -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold px-2 tracking-widest text-[9px]">Cholesterol Level (mg/dl)</label>
+                                </div>
+                                <input type="number" name="chol" id="input-chol" value="246" min="100" max="600" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Fasting Sugar -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">Fasting Blood Sugar (fbs)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl">
+                                            1 = > 120 mg/dl<br>0 = ≤ 120 mg/dl
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="fbs" id="input-fbs" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0" selected>≤ 120 mg/dl</option>
+                                    <option value="1">> 120 mg/dl</option>
+                                </select>
+                                <p class="text-[8px] text-gray-600 px-2 italic uppercase">Fasting Blood Sugar Profile</p>
+                            </div>
+
+                            <!-- Rest ECG -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">Resting ECG (restecg)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl leading-relaxed">
+                                            0: Normal<br>1: ST-T wave abnormality<br>2: Left ventricular hypertrophy
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="restecg" id="input-restecg" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0">Normal</option>
+                                    <option value="1" selected>ST-T Wave Abnormality</option>
+                                    <option value="2">Left Ventricular Hypertrophy</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Max Heart Rate -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold px-2 tracking-widest text-[9px]">Maximum Heart Rate (thalach)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl leading-relaxed">
+                                            Maximum heart rate achieved during exercise.
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="number" name="thalach" id="input-thalach" value="150" min="50" max="250" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Induced Angina -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[8px]">Exercise Induced Angina (exang)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl">
+                                            1 = Yes<br>0 = No
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="exang" id="input-exang" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Oldpeak -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold px-2 tracking-widest text-[9px]">ST Depression (oldpeak)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl leading-relaxed">
+                                            ST depression induced by exercise relative to rest.
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="number" step="0.1" name="oldpeak" id="input-oldpeak" value="1.2" min="0" max="10" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                <p class="text-[8px] text-gray-600 px-2 italic uppercase">Relative to rest</p>
+                            </div>
+
+                            <!-- Slope -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">ST Slope</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl">
+                                            0: Upsloping<br>1: Flat<br>2: Downsloping
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="slope" id="input-slope" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0">Upsloping</option>
+                                    <option value="1">Flat</option>
+                                    <option value="2" selected>Downsloping</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Vessels -->
+                            <div class="group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">Major Vessels (ca)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl">
+                                            Number of major vessels (0-3)
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="ca" id="input-ca" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="0" selected>None</option>
+                                    <option value="1">One</option>
+                                    <option value="2">Two</option>
+                                    <option value="3">Three</option>
+                                </select>
+                                <p class="text-[8px] opacity-0">&nbsp;</p>
+                            </div>
+
+                            <!-- Thal -->
+                            <div class="sm:col-span-2 group space-y-2">
+                                <div class="flex items-center gap-2 px-2 h-4">
+                                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest text-[9px]">Thalassemia Type (thal)</label>
+                                    <div class="relative group/tooltip">
+                                        <svg class="w-3 h-3 text-gray-600 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-black/90 backdrop-blur border border-white/10 rounded-xl text-[10px] text-gray-300 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20 shadow-2xl leading-relaxed">
+                                            1: Normal<br>2: Fixed defect<br>3: Reversible defect
+                                        </div>
+                                    </div>
+                                </div>
+                                <select name="thal" id="input-thal" required
+                                    class="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all">
+                                    <option value="1">Normal</option>
+                                    <option value="2" selected>Fixed Defect</option>
+                                    <option value="3">Reversible Defect</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-4 pt-4">
+                            <div class="flex gap-4">
+                                <button type="submit"
+                                    class="flex-1 py-5 bg-gradient-to-r from-cyan-600 to-purple-600 text-white font-black text-xl tracking-widest rounded-3xl hover:shadow-[0_0_40px_rgba(6,182,212,0.3)] transition-all active:scale-95 shadow-lg uppercase">
+                                    Predict
+                                </button>
+                                <button type="button" id="reset-btn"
+                                    class="px-8 py-5 bg-white/5 border border-white/10 text-white font-bold rounded-3xl hover:bg-white/10 transition-all shadow-lg group">
+                                    <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-[9px] text-gray-500 text-center uppercase tracking-widest font-medium opacity-60">
+                                Reset will generate a new random patient profile for testing the prediction model.
+                            </p>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Section 3: Prediction Result -->
+                <div class="space-y-8 animate-fade-in-up" style="animation-delay: 0.2s">
+                    <div id="predict-result-placeholder"
+                        class="h-full flex flex-col items-center justify-center p-10 border-2 border-dashed border-white/10 rounded-[2.5rem] text-gray-500 text-center bg-white/[0.02]">
+                        <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <p class="font-mono text-xs leading-relaxed tracking-widest uppercase opacity-40">
+                            Enter clinical profile and initiate<br>diagnostic scanning sequence...</p>
+                    </div>
+
+                    <div id="predict-result" class="hidden space-y-8">
+                        <!-- AI Analysis Sequence -->
+                        <div id="ai-analysis-sequence" class="flex flex-col items-center justify-center space-y-8 py-24 bg-white/5 backdrop-blur-xl rounded-[3rem] border border-white/10 shadow-2xl relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5"></div>
+                            <div class="relative w-24 h-24">
+                                <div class="absolute inset-0 rounded-full border-2 border-cyan-500/10"></div>
+                                <div class="absolute inset-0 rounded-full border-t-2 border-cyan-500 animate-spin"></div>
+                                <div class="absolute inset-4 rounded-full border-b-2 border-purple-500 animate-spin-reverse opacity-50"></div>
+                                <svg class="absolute inset-0 m-auto w-8 h-8 text-cyan-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div class="text-center space-y-4 relative z-10">
+                                <p id="analysis-step-text" class="text-cyan-400 font-mono text-[10px] uppercase tracking-[0.4em] animate-pulse">Analyzing patient profile...</p>
+                                <div class="w-56 h-1 px-0.5 bg-white/5 rounded-full overflow-hidden mx-auto border border-white/5">
+                                    <div id="analysis-progress-bar" class="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-emerald-500 transition-all duration-700 shadow-[0_0_15px_rgba(6,182,212,0.5)]" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actual Result Content (Wrapped) -->
+                        <div id="predict-result-content" class="hidden space-y-8">
+                        <!-- Diagnostic Report Header -->
+                        <div class="bg-white/5 backdrop-blur-xl p-10 rounded-[3rem] relative overflow-hidden group shadow-2xl border border-white/10">
+                            <div id="risk-glow"
+                                class="absolute -top-32 -right-32 w-80 h-80 blur-[100px] transition-colors duration-1000">
+                            </div>
+                            <div class="relative z-10 space-y-8">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-[4px]">
+                                        Heart Disease Diagnostic Report</h3>
+                                    <div id="risk-badge"
+                                        class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-rose-500/30 bg-rose-500/10 text-rose-400">
+                                        RISK DETECTED</div>
+                                </div>
+
+                                <div class="flex flex-col items-center justify-center pt-8 pb-4">
+                                    <div
+                                        class="text-[10px] text-gray-400 uppercase mb-4 tracking-[0.3em] font-medium text-center">
+                                        Predicted Probability</div>
+
+                                    <div class="text-center mb-8">
+                                        <div id="risk-prob"
+                                            class="text-[7rem] font-black italic tracking-tighter text-white leading-none mb-4 animate-pulse">
+                                            87.4%</div>
+                                        <div id="risk-label"
+                                            class="text-4xl font-black uppercase italic tracking-[0.5em] text-rose-500">
+                                            POSITIVE</div>
+                                    </div>
+
+                                    <!-- Sleek Horizontal Activity Bar -->
+                                    <div class="w-full max-w-sm px-6 mb-10">
+                                        <div
+                                            class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div id="gauge-bar-horizontal"
+                                                class="h-full bg-gradient-to-r from-cyan-500 via-amber-500 to-rose-500 transition-all duration-1000"
+                                                style="width: 87.4%"></div>
+                                        </div>
+                                        <div class="flex justify-between mt-2">
+                                            <span
+                                                class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Minimum Risk</span>
+                                            <span
+                                                class="text-[8px] text-gray-500 font-bold uppercase tracking-widest">Critical Risk</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 backdrop-blur-sm">
+                                        <div class="text-[10px] text-gray-500 uppercase mb-1 tracking-widest">Risk Assessment
+                                        </div>
+                                        <div id="risk-score" class="text-2xl font-black text-white italic">HIGH RISK
+                                        </div>
+                                        <p class="text-[8px] text-gray-600 mt-1 uppercase font-bold tracking-widest">Risk classification based on the prediction model.</p>
+                                    </div>
+                                    <div class="bg-white/5 p-6 rounded-[2rem] border border-white/5 backdrop-blur-sm">
+                                        <div class="text-[10px] text-gray-500 uppercase mb-1 tracking-widest">
+                                            Model Engine</div>
+                                        <div class="text-2xl font-black text-cyan-400 italic">Naive Bayes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deep Analysis Insight -->
+                        <section class="bg-white/5 border border-white/10 p-10 rounded-[2.5rem] shadow-xl backdrop-blur-md">
+                            <div class="flex items-center gap-3 mb-8 px-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
+                                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                                    Clinical Variable Analysis</h3>
+                            </div>
+                            <div class="space-y-6">
+                                <!-- Progress Bar for Risk Probability -->
+                                <div class="px-2">
+                                    <div class="flex justify-between items-end mb-2">
+                                        <span
+                                            class="text-[10px] text-gray-500 uppercase font-black tracking-widest">Risk Density Analysis</span>
+                                        <span id="risk-prob-bar-label"
+                                            class="text-xs font-black text-white italic">87.4%</span>
+                                    </div>
+                                    <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div id="risk-prob-bar"
+                                            class="h-full bg-gradient-to-r from-cyan-500 to-rose-500 transition-all duration-1000"
+                                            style="width: 87.4%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="p-6 bg-rose-500/5 rounded-[2rem] border border-rose-500/10 mt-8">
+                                    <h4 class="text-[10px] font-black text-rose-400 uppercase mb-3 tracking-widest">
+                                        Top Influential Factors</h4>
+                                    <p id="feature-insight-text"
+                                        class="text-sm text-gray-400 leading-relaxed font-medium">
+                                        The model identifies <span class="text-white font-bold italic">Chest Pain Type</span> and
+                                        <span class="text-white font-bold italic">Maximum Heart Rate</span>
+                                        as the primary influential factors for the predicted cardiac risk status.
+                                    </p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 px-2">
+                                    <div
+                                        class="text-center font-mono py-2 px-4 rounded-xl border border-white/5 text-[10px] text-gray-500 uppercase tracking-widest">
+                                        Accuracy: <span class="text-purple-400 font-bold italic">90.44%</span>
+                                    </div>
+                                    <div
+                                        class="text-center font-mono py-2 px-4 rounded-xl border border-white/5 text-[10px] text-gray-500 uppercase tracking-widest">
+                                        Profile: <span class="text-cyan-400 font-bold italic">V-Scan 2.1</span>
+                                    </div>
+                                </div>
+
+                                <!-- Analysis Completion Tag -->
+                                <div id="analysis-completion-badge" class="hidden flex justify-center pt-8">
+                                    <div class="flex items-center gap-2 px-5 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                                        <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span class="text-emerald-400 text-[9px] font-black uppercase tracking-widest">AI Clinical Analysis Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/script.js"></script>
+</body>
+
+</html>
